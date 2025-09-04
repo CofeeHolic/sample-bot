@@ -1,0 +1,7 @@
+dhanhq>=2.1
+pandas>=2.0
+pandas_ta>=0.3
+requests>=2.31
+python-telegram-bot>=20
+schedule
+pytz

@@ -1,0 +1,58 @@
+name: Deploy Trading Bot to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Deploy to AWS EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.AWS_HOST }}
+        username: ${{ secrets.AWS_USER }}
+        key: ${{ secrets.AWS_SSH_KEY }}
+        script: |
+          set -e # Exit immediately if a command exits with a non-zero status.
+
+          # Navigate to the project directory
+          export PROJECT_DIR=~/sample-bot
+          if [ ! -d "$PROJECT_DIR" ]; then
+            echo "Project directory does not exist. Cloning repository."
+            git clone https://github.com/${{ github.repository }}.git $PROJECT_DIR
+          fi
+          cd $PROJECT_DIR
+
+          # Pull the latest changes
+          echo "Pulling latest code from main branch..."
+          git checkout main
+          git pull origin main
+
+          # Setup Python 3.10 virtual environment
+          echo "Setting up Python 3.10 virtual environment..."
+          if [ ! -d "venv" ]; then
+            python3.10 -m venv venv
+          fi
+          source venv/bin/activate
+
+          # Install dependencies
+          echo "Installing dependencies from requirements.txt..."
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+          # Restart the trading bot
+          echo "Restarting the trading bot..."
+          # Kill any existing process to prevent multiple instances
+          pkill -f "python3.10 trading_bot.py" || true
+
+          # Start the bot in the background
+          nohup python3.10 trading_bot.py > trading_bot.out 2> trading_bot.err &
+
+          echo "Deployment successful."
