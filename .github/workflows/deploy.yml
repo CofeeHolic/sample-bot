@@ -1,5 +1,6 @@
 name: Deploy Trading Bot to AWS
 
+
 on:
   push:
     branches:
