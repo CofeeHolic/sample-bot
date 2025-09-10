@@ -1,6 +1,6 @@
 dhanhq>=2.0.2
 pandas>=2.0
-pandas-ta>=0.3
+pandas_ta>=0.3.14b0
 requests>=2.31
 python-telegram-bot>=20
 schedule
